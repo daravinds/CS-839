@@ -22,10 +22,10 @@ parser.add_argument('--adversarial_texts_path',
                     default='./data/adversarial_texts.csv')
 parser.add_argument('--test_samples_cap',
                     help='Amount of test samples to use',
-                    type=int, default=5)
+                    type=int, default=10)
 parser.add_argument('--use_typos',
                     help='Whether to use typos for paraphrases',
-                    type=bool, default=True)
+                    type=bool, default=False)
 
 
 def clean(text):
@@ -65,31 +65,39 @@ if __name__ == '__main__':
     adversarial_preds = np.array(preds)
 
     for index, doc in enumerate(docs_test[:test_samples_cap]):
-        if y_test[index] == 0 and preds[index] == 0:
+        #if y_test[index] == 0 and preds[index] == 0:
             # If model prediction is correct, and the true class is female,
             # craft adversarial text
+        # Chaning positive sentiment to negative and vice versa
+        if y_test[index] == 0 and preds[index] == 0:
+
             adv_doc, (y, adv_y) = adversarial_paraphrase(
                     doc, grad_guide, target=1, use_typos=args.use_typos)
 
-            print(y, adv_y)
+        elif y_test[index] == 1 and preds[index] == 1:
 
-            pred = np.round(adv_y)
-            if pred != preds[index]:
-                successful_perturbations += 1
-                print('{}. Successful example crafted.'.format(index))
-            else:
-                failed_perturbations += 1
-                print('{}. Failure.'.format(index))
+            adv_doc, (y, adv_y) = adversarial_paraphrase(
+                    doc, grad_guide, target=0, use_typos=args.use_typos)
 
-            adversarial_preds[index] = pred
-            adversarial_text_data.append({
-                'index': index,
-                'doc': clean(doc),
-                'adv': clean(adv_doc),
-                'success': pred != preds[index],
-                'confidence': y,
-                'adv_confidence': adv_y
-            })
+        print(y, adv_y)
+
+        pred = np.round(adv_y)
+        if pred != preds[index]:
+            successful_perturbations += 1
+            print('{}. Successful example crafted.'.format(index))
+        else:
+            failed_perturbations += 1
+            print('{}. Failure.'.format(index))
+
+        adversarial_preds[index] = pred
+        adversarial_text_data.append({
+            'index': index,
+            'doc': clean(doc),
+            'adv': clean(adv_doc),
+            'success': pred != preds[index],
+            'confidence': y,
+            'adv_confidence': adv_y
+        })
 
     print('Model accuracy on adversarial examples:',
             np.mean(adversarial_preds == y_test[:test_samples_cap]))

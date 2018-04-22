@@ -2,6 +2,7 @@ import spacy
 import pickle
 import pandas as pd
 import numpy as np
+import string
 
 from sklearn.model_selection import ShuffleSplit
 from sklearn.preprocessing import LabelEncoder
@@ -33,10 +34,13 @@ def load_twitter_gender_data(from_cache=False):
         with open(cached_data_path, 'rb') as f:
             return pickle.load(f)
 
-    max_length = 1000
-
     print('Loading and preparing data...')
-    raw_data = pd.read_csv(raw_data_path, encoding='latin1', nrows = 1000)
+    raw_data = pd.read_csv(raw_data_path, encoding='latin1')
+
+    for index, tweet in enumerate(raw_data['SentimentText']):
+        for char in string.punctuation:
+            tweet = tweet.replace(char, "")
+        raw_data['SentimentText'][index] = tweet
 
     print('Raw data with 100% confidence:', raw_data.shape)
 
