@@ -9,9 +9,9 @@ import csv
 import string
 printable = set(string.printable)
 
-ifile = open('../data/data.csv', "rU")
+ifile = open('../data/data.csv', "rU", encoding='mac_roman')
 reader = csv.reader(ifile, delimiter=",")
-
+print(reader)
 training_set = []
 i = 0
 
@@ -22,7 +22,7 @@ for row in reader:
         break
     i = i + 1
     training_set.append(row)
-print training_set[0]
+print (training_set[0])
 
 train_x = []
 for x in training_set:
