@@ -2,7 +2,7 @@ import csv
 import argparse
 import pdb
 import spacy
-
+import pandas as pd
 import numpy as np
 
 from datetime import datetime
@@ -84,8 +84,12 @@ if __name__ == '__main__':
 
     # Load CSV DATA HERE
     max_length = 1000
-    raw_data = ["Hello I am good", "He is bad"]
-    docs = list(nlp.pipe(raw_data, batch_size=5000, n_threads=2))
+    #raw_data = ["Hello I am good", "He is bad"]
+    raw_data = pd.read_csv('./data/finalcleantweets.csv', encoding='latin1')
+
+
+
+    docs = list(nlp.pipe(raw_data['tweet'], batch_size=5000, n_threads=2))
     X = extract_features(docs, max_length=max_length)
 
     # Load model from weights
@@ -96,15 +100,17 @@ if __name__ == '__main__':
     pred = model.predict_classes(X).squeeze()
     docs = np.array(docs, dtype=object)
     print (docs)
-
+    confidence = []
     for doc in enumerate(docs):
         print (doc[1])
         x = extract_features([doc[1]], max_length=max_length)[0]
         y = model.predict(x.reshape(1, -1), verbose=0).squeeze()
-        print ("confidence", y)
-
-    print("predictions", pred)
-
+        confidence.append(y)
+        #print ("confidence", y)
+    raw_data['Class'] = confidence
+    #print("predictions", pred)
+    #print("confidence", confidence)
+    raw_data.to_csv("Results.csv")
     # WRITE BACK TO CSV HERE
     # # Save resulting docs in a CSV file
     # with open(args.adversarial_texts_path, 'w') as handle:
