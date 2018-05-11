@@ -1,5 +1,7 @@
 # CS-839
 
+Projects for CS-839 Topics in Security (Spring 2018)
+
 This is an adversarial ML project where we create adversarial examples
 for tweets.
 
